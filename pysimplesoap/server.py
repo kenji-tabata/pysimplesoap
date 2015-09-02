@@ -160,7 +160,7 @@ class SoapDispatcher(object):
                     # Now we change 'external' and 'model' to the received forms i.e. 'ext' and 'mod'
                 # After that we know how the client has prefixed additional namespaces
 
-            ns = NS_RX.findall(xml)
+            ns = NS_RX.findall(xml.decode("utf-8"))
             for k, v in ns:
                 if v in self.namespaces.values():
                     _ns_reversed[v] = k
@@ -364,14 +364,31 @@ class SoapDispatcher(object):
                     all = complex.add_child("xsd:all")
                 elif items:
                     all = complex.add_child("xsd:sequence")
+                cont = 0
                 for k, v in items:
                     e = all.add_child("xsd:element")
                     e['name'] = k
                     if array:
                         e[:] = {'minOccurs': "0", 'maxOccurs': "unbounded"}
-                    if v in TYPE_MAP.keys():
+                    cont = cont+1
+                    try:
+                        val_in_key = v in TYPE_MAP.keys()
+                    except TypeError as errDict:
+                        try:
+                            val_in_key = v.values() in TYPE_MAP.keys()
+                        except AttributeError as errList:
+                            val_in_key = v[cont].values() in TYPE_MAP.keys()
+                    try:
+                        key_is_none = v is None
+                    except TypeError as errDict:
+                        try:
+                            key_is_none = v.values() is None
+                        except AttributeError as errList:
+                            key_is_none = v[cont].values() in TYPE_MAP.keys()
+
+                    if val_in_key:
                         t = 'xsd:%s' % TYPE_MAP[v]
-                    elif v is None:
+                    elif key_is_none:
                         t = 'xsd:anyType'
                     elif isinstance(v, list):
                         n = "ArrayOf%s%s" % (name, k)
@@ -621,4 +638,3 @@ if __name__ == "__main__":
         result = response['AddResult']
         log.info(int(result['ab']))
         log.info(str(result['dd']))
-

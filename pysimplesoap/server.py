@@ -364,20 +364,18 @@ class SoapDispatcher(object):
                     all = complex.add_child("xsd:all")
                 elif items:
                     all = complex.add_child("xsd:sequence")
-                cont = 0
                 for k, v in items:
                     e = all.add_child("xsd:element")
                     e['name'] = k
                     if array:
                         e[:] = {'minOccurs': "0", 'maxOccurs': "unbounded"}
-                    cont = cont+1
                     try:
                         val_in_key = v in TYPE_MAP.keys()
                     except TypeError as errDict:
                         try:
                             val_in_key = v.values() in TYPE_MAP.keys()
                         except AttributeError as errList:
-                            val_in_key = v[cont].values() in TYPE_MAP.keys()
+                            val_in_key = v[0].values() in TYPE_MAP.keys()
                     try:
                         key_is_none = v is None
                     except TypeError as errDict:
@@ -385,7 +383,6 @@ class SoapDispatcher(object):
                             key_is_none = v.values() is None
                         except AttributeError as errList:
                             key_is_none = v[cont].values() in TYPE_MAP.keys()
-
                     if val_in_key:
                         t = 'xsd:%s' % TYPE_MAP[v]
                     elif key_is_none:

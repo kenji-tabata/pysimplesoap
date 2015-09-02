@@ -764,7 +764,7 @@ class SoapClient(object):
 
                 if 'fault_msgs' in op:
                     faults = op['faults'] = {}
-                    for msg in op['fault_msgs'].values():
+                    for name, msg in op['fault_msgs'].items():
                         msg_obj = get_message(messages, msg, parts_output_body)
                         tag_name = list(msg_obj)[0]
                         faults[tag_name] = msg_obj
